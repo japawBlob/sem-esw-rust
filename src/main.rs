@@ -1,9 +1,13 @@
+mod esw_server;
+
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
 
 use std::env;
 use std::error::Error;
 
+
+//Basic server taken from: https://medium.com/go-rust/rust-day-7-tokio-simple-tcp-server-32c40f12e79b
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let addr = env::args()

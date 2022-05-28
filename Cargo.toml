@@ -7,4 +7,9 @@ edition = "2021"
 
 [dependencies]
 tokio = { version = "1", features = ["full"] }
-mini-redis = "0.4"
+protobuf = "2.27.1"
+
+[build-dependencies]
+protobuf-codegen-pure = "2.27.1"
+protoc-rust = "2.27.1"
+
