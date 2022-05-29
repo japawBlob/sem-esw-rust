@@ -16,6 +16,7 @@ use std::sync::{Arc};
 use dashmap::DashSet;
 use std::hash::{Hash, Hasher};
 use std::collections::hash_map::{DefaultHasher, RandomState};
+use tokio::runtime::Builder;
 
 
 //Basic server taken from: https://medium.com/go-rust/rust-day-7-tokio-simple-tcp-server-32c40f12e79b
@@ -26,12 +27,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .unwrap_or_else(|| "127.0.0.1:8123".to_string());
     let listener = TcpListener::bind(&addr).await?;
     println!("Listening on: {}", addr);
+    let runtime = Builder::new_multi_thread()
+        .worker_threads(num_cpus::get())
+        .build()
+        .unwrap();
     let random = RandomState::new();
     let words: Arc<DashSet<u64>> = Arc::new(DashSet::with_capacity_and_hasher(5000000, random));
     loop {
         let (mut socket, _) = listener.accept().await?;
         let w = words.clone();
-        tokio::spawn(async move {
+        runtime.spawn(async move {
             loop {
                 let size_bytes = socket.read_u32().await;
                 if size_bytes.is_err() {

@@ -300,6 +300,7 @@ version = "0.1.0"
 dependencies = [
  "dashmap",
  "flate2",
+ "num_cpus",
  "protobuf",
  "protobuf-codegen-pure",
  "protoc-rust",
