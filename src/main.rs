@@ -33,7 +33,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         let w = words.clone();
         tokio::spawn(async move {
             loop {
-                let size_bytes = socket.read_u32().await.expect("Error reading msg_size");
+                let size_bytes = socket.read_u32().await;
                 if size_bytes.is_err() {
                     break;
                 }
@@ -76,7 +76,7 @@ fn handle_post_words(words : &DashSet<u64> , buffer : Vec<u8>) -> Response {
     for word in buf.split_whitespace(){
         let mut s = DefaultHasher::new();
         word.hash(&mut s);
-        words.insert(s.finish())
+        words.insert(s.finish());
     }
     let mut response = esw_server::Response::new();
     response.set_status(Response_Status::OK);
