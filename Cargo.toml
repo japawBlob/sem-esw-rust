@@ -8,6 +8,8 @@ edition = "2021"
 [dependencies]
 tokio = { version = "1", features = ["full"] }
 protobuf = "2.27.1"
+flate2 = "1.0"
+dashmap = "5"
 
 [build-dependencies]
 protobuf-codegen-pure = "2.27.1"

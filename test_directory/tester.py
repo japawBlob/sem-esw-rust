@@ -51,10 +51,10 @@ class Client:
             raise ValueError("Status not OK: " + response.errMsg)
 
 
-host = "0.0.0.0"
+host = "127.0.0.1"
 port = 8123
 client = Client(host, port)
-
+print("\n")
 print(client.get_count())
 client.post_words("two words")
 client.post_words("three words words")
