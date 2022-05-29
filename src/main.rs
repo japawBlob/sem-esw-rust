@@ -5,9 +5,7 @@ mod esw_server;
 use protobuf::Message;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::TcpListener;
-use std::collections::HashSet;
 
-//https://docs.rs/flate2/1.0.22/flate2/read/struct.GzDecoder.html
 use flate2::read::GzDecoder;
 use std::io::Read;
 use std::env;
@@ -17,7 +15,7 @@ use crate::esw_server::{Response, Response_Status};
 use std::sync::{Arc};
 use dashmap::DashSet;
 use std::hash::{Hash, Hasher};
-use std::collections::hash_map::DefaultHasher;
+use std::collections::hash_map::{DefaultHasher, RandomState};
 
 
 //Basic server taken from: https://medium.com/go-rust/rust-day-7-tokio-simple-tcp-server-32c40f12e79b
@@ -28,26 +26,22 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .unwrap_or_else(|| "127.0.0.1:8123".to_string());
     let listener = TcpListener::bind(&addr).await?;
     println!("Listening on: {}", addr);
-
-    let words: Arc<DashSet<u64>> = Arc::new(DashSet::with_capacity(5000000));
-
+    let random = RandomState::new();
+    let words: Arc<DashSet<u64>> = Arc::new(DashSet::with_capacity_and_hasher(5000000, random));
     loop {
         let (mut socket, _) = listener.accept().await?;
         let w = words.clone();
         tokio::spawn(async move {
             loop {
-
-                let size_bytes = socket.read_u32().await;
+                let size_bytes = socket.read_u32().await.expect("Error reading msg_size");
                 if size_bytes.is_err() {
                     break;
                 }
                 let msg_size = size_bytes.unwrap();
-                println!("Size: {}", msg_size);
+                // println!("Size: {}", msg_size);
                 let mut buffer = vec![0u8; msg_size as usize];
-                socket.read_exact(&mut buffer).await.expect("TODO: panic message");
-
+                socket.read_exact(&mut buffer).await.expect("Error receiving request datagram");
                 let mut request = esw_server::Request::parse_from_bytes(&buffer).unwrap();
-
                 let mut response;
                 if request.has_getCount() {
                     response = handle_get_count(&w);
@@ -57,16 +51,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     response = Response::new();
                     response.set_status(Response_Status::ERROR);
                 }
-                // if !response.is_initialized() {
-                //     panic!("Not get count or post words");
-                //     break;
-                // }
-
                 let data = response.write_to_bytes().unwrap();
-                socket.write_i32(data.len() as i32).await.expect("TODO: panic message");
-                socket.write_all(&data).await.expect("TODO: panic message");
+                socket.write_i32(data.len() as i32).await.expect("Error sending response size");
+                socket.write_all(&data).await.expect("Error sending response dataram");
             }
-
         });
     }
 }
@@ -81,21 +69,15 @@ fn handle_get_count(words: &DashSet<u64>) -> Response {
 
 fn handle_post_words(words : &DashSet<u64> , buffer : Vec<u8>) -> Response {
 
-    // let mut decoder = GzDecoder::new(&buffer[..]);
-    // let mut buf = String::new();
-    // decoder.read_to_string(&mut buf).expect("decoder borked");
-
-    let mut decoder = GzDecoder::new(buffer.as_slice());
+    let mut decoder = GzDecoder::new(&buffer[..]);
     let mut buf = String::new();
-    decoder.read_to_string(&mut buf).unwrap();
+    decoder.read_to_string(&mut buf).expect("Decoder did not manage to read incoming data");
 
     for word in buf.split_whitespace(){
         let mut s = DefaultHasher::new();
         word.hash(&mut s);
-        words.insert(s.finish());
-        //words.insert(word.parse().unwrap());
+        words.insert(s.finish())
     }
-    // response.status = Response_Status::OK;
     let mut response = esw_server::Response::new();
     response.set_status(Response_Status::OK);
     return response;
