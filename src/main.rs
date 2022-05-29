@@ -19,12 +19,12 @@ use std::collections::hash_map::{DefaultHasher, RandomState};
 use tokio::runtime::Builder;
 
 
-//Basic server taken from: https://medium.com/go-rust/rust-day-7-tokio-simple-tcp-server-32c40f12e79b
+//Basic server structure taken from: https://medium.com/go-rust/rust-day-7-tokio-simple-tcp-server-32c40f12e79b
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let addr = env::args()
         .nth(1)
-        .unwrap_or_else(|| "127.0.0.1:8123".to_string());
+        .unwrap_or_else(|| "[..]:8123".to_string());
     let listener = TcpListener::bind(&addr).await?;
     println!("Listening on: {}", addr);
     let runtime = Builder::new_multi_thread()
@@ -43,7 +43,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     break;
                 }
                 let msg_size = size_bytes.unwrap();
-                // println!("Size: {}", msg_size);
                 let mut buffer = vec![0u8; msg_size as usize];
                 socket.read_exact(&mut buffer).await.expect("Error receiving request datagram");
                 let mut request = esw_server::Request::parse_from_bytes(&buffer).unwrap();
@@ -58,7 +57,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 }
                 let data = response.write_to_bytes().unwrap();
                 socket.write_i32(data.len() as i32).await.expect("Error sending response size");
-                socket.write_all(&data).await.expect("Error sending response dataram");
+                socket.write_all(&data).await.expect("Error sending response datagram");
             }
         });
     }
@@ -73,7 +72,6 @@ fn handle_get_count(words: &DashSet<u64>) -> Response {
 }
 
 fn handle_post_words(words : &DashSet<u64> , buffer : Vec<u8>) -> Response {
-
     let mut decoder = GzDecoder::new(&buffer[..]);
     let mut buf = String::new();
     decoder.read_to_string(&mut buf).expect("Decoder did not manage to read incoming data");
