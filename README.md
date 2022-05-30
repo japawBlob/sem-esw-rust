@@ -1,4 +1,5 @@
 ### Esw server - Rust
+Repository is located here: https://github.com/japawBlob/sem-esw-rust
 
 This is basic server build on tokio (https://tokio.rs/), which uses dashSet for storing words.
 
@@ -6,7 +7,14 @@ For building and running use following commands:
 
 `Cargo build` <br/>
 and <br/>
-`Cargo run`
+`Cargo run`<br/>
+
+or 
+
+`Cargo build --release` <br/>
+and <br/>
+`Cargo run --release` <br/>
+for optimized version.
 
 The server listens to port 8123 by default, but can accept one argument in form of <br/>
 `Cargo run [..]:<<port>>` <br/>
@@ -14,7 +22,8 @@ which will specify the port if <<port>> would be replaced with desired number.
 
 For running on ritchie I used nix-os using nixpkgs (https://nixos.wiki/wiki/Rust) with unstable build.
 I wasn't able to achieve satisfactory result on ESW server tester, since last few days ritchie stood at 100% usage and 
-my results were all over the place.
+my results were all over the place. 
+EDIT: On monday morning 30.5. ritchie was without load. I tested my program. Added optimazion flags and program runs as expected.
 
 Sources: <br/>
 For basics of dashSet: https://docs.rs/dashmap/latest/dashmap/struct.DashSet.html <br/>
