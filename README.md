@@ -5,19 +5,19 @@ This is basic server build on tokio (https://tokio.rs/), which uses dashSet for 
 
 For building and running use following commands:
 
-`Cargo build` <br/>
+`cargo build` <br/>
 and <br/>
-`Cargo run`<br/>
+`cargo run`<br/>
 
 or 
 
-`Cargo build --release` <br/>
+`cargo build --release` <br/>
 and <br/>
-`Cargo run --release` <br/>
+`cargo run --release` <br/>
 for optimized version.
 
 The server listens to port 8123 by default, but can accept one argument in form of <br/>
-`Cargo run [..]:<<port>>` <br/>
+`cargo run [..]:<<port>>` <br/>
 which will specify the port if <<port>> would be replaced with desired number.
 
 For running on ritchie I used nix-os using nixpkgs (https://nixos.wiki/wiki/Rust) with unstable build.
